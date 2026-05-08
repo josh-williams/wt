@@ -1,0 +1,25 @@
+[package]
+name = "wt"
+version = "0.1.0"
+edition = "2024"
+description = "Per-repo git worktree CLI: create, list, and clean worktrees with configurable startup steps"
+license = "MIT"
+
+[[bin]]
+name = "wt"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0"
+clap = { version = "4.6", features = ["derive"] }
+clap_complete = "4.6"
+dialoguer = "0.12"
+owo-colors = "4.3"
+serde = { version = "1.0", features = ["derive"] }
+toml = "1.1"
+which = "8.0"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
