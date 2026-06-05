@@ -59,6 +59,10 @@ pub struct RmArgs {
     /// The worktree directory name (e.g. `josh-fix-bug`). Omit to pick interactively.
     pub name: Option<String>,
 
+    /// Interactively select one or more worktrees to remove, then delete them all at the end
+    #[arg(long, short = 'i')]
+    pub interactive: bool,
+
     /// Force-remove without prompting on dirty/untracked files
     #[arg(long, short)]
     pub force: bool,

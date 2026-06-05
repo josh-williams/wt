@@ -114,7 +114,9 @@ pub fn run(args: CleanArgs) -> Result<()> {
         // uncommitted here is post-merge cruft we don't care about.
         match repo::worktree_remove(&loaded.repo_root, &path, true)? {
             RemoveOutcome::Removed => {}
-            RemoveOutcome::NeedsForce(msg) | RemoveOutcome::Other(msg) => {
+            RemoveOutcome::NeedsForce(msg)
+            | RemoveOutcome::Orphan(msg)
+            | RemoveOutcome::Other(msg) => {
                 eprintln!("  failed to remove worktree: {}", msg.trim());
                 had_errors = true;
                 println!();

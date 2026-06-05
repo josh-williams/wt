@@ -122,10 +122,10 @@ impl LoadedConfig {
             format!("reading worktrees dir {}", self.worktrees_dir.display())
         })? {
             let entry = entry?;
-            if entry.file_type()?.is_dir() {
-                if let Some(s) = entry.file_name().to_str() {
-                    names.push(s.to_string());
-                }
+            if entry.file_type()?.is_dir()
+                && let Some(s) = entry.file_name().to_str()
+            {
+                names.push(s.to_string());
             }
         }
         names.sort();

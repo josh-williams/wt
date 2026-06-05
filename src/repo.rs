@@ -9,6 +9,9 @@ pub enum RemoveOutcome {
     Removed,
     /// Failed because the worktree has modified or untracked files; needs --force.
     NeedsForce(String),
+    /// Failed because git doesn't recognize the path as a working tree (orphan
+    /// directory: dir exists on disk but git's admin record is gone).
+    Orphan(String),
     /// Some other failure with the captured stderr.
     Other(String),
 }
@@ -96,19 +99,27 @@ pub fn worktree_remove(repo_root: &Path, path: &Path, force: bool) -> Result<Rem
 
     let stderr = String::from_utf8_lossy(&out.stderr).to_string();
     let stdout = String::from_utf8_lossy(&out.stdout).to_string();
-    // Echo whatever git said, like the old script did.
+
+    // Classify before deciding whether to echo. For orphan dirs we'd rather
+    // print our own friendlier explanation than git's raw "fatal: ... is not a
+    // working tree" line.
+    let outcome = if stderr.contains("contains modified or untracked files") {
+        RemoveOutcome::NeedsForce(stderr.clone())
+    } else if stderr.contains("is not a working tree") {
+        RemoveOutcome::Orphan(stderr.clone())
+    } else {
+        RemoveOutcome::Other(stderr.clone())
+    };
+
+    let suppress_stderr = matches!(outcome, RemoveOutcome::Orphan(_));
     if !stdout.trim().is_empty() {
         println!("{}", stdout.trim_end());
     }
-    if !stderr.trim().is_empty() {
+    if !suppress_stderr && !stderr.trim().is_empty() {
         eprintln!("{}", stderr.trim_end());
     }
 
-    if stderr.contains("contains modified or untracked files") {
-        Ok(RemoveOutcome::NeedsForce(stderr))
-    } else {
-        Ok(RemoveOutcome::Other(stderr))
-    }
+    Ok(outcome)
 }
 
 /// Resolve the current branch name for a worktree directory.
